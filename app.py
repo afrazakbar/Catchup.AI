@@ -11,7 +11,6 @@ import fitz  # PyMuPDF for PDFs
 
 import discord
 from discord.ext import commands
-from pyngrok import ngrok
 
 load_dotenv()
 
@@ -102,7 +101,7 @@ def index():
             summary = get_revision_notes(text_to_summarize)
             asyncio.run_coroutine_threadsafe(send_dm_to_student(student_id, topic, summary), bot.loop)
         else:
-            summary = "Please provide a topic or upload an image/pdf of notes 💀."
+            summary = "Please provide a topic or upload an image/pdf of notes."
 
     return render_template('index.html', summary=summary)
 
@@ -114,15 +113,13 @@ async def on_ready():
     if guild:
         members_list = [{"id": str(m.id), "name": m.display_name} for m in guild.members if not m.bot]
         app.config['discord_members'] = members_list
-        print(f"Loaded {len(members_list)} members 💀")
+        print(f"Loaded {len(members_list)} members")
     else:
         print("Guild not found!")
 
-# --- Run Flask + ngrok ---
+# --- Run Flask + Discord ---
 def run_flask():
-    public_url = ngrok.connect(8080)
-    print(f"[INFO] ngrok tunnel available at: {public_url}")
-    app.run(debug=True, use_reloader=False, port=8080)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=8080)
 
 def run_discord():
     bot.run(DISCORD_TOKEN)
