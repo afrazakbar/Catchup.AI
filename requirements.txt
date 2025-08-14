@@ -1,0 +1,8 @@
+flask
+python-dotenv
+openai
+pytesseract
+pillow
+pymupdf
+discord.py
+werkzeug
