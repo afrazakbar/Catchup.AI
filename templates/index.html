@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <title>CatchUp.AI - Revision Notes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <style>
+      /* Toggle Wrapper - fixed top-left */
+      .toggle-wrapper {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 9999;
+        user-select: none;
+      }
+
+      .toggle-label {
+        cursor: pointer;
+        display: inline-flex;
+        width: 60px;
+        height: 30px;
+        background: #bbb;
+        border-radius: 50px;
+        position: relative;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 0 6px #bbb;
+        padding: 2px;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 18px;
+        color: #f9f9f9;
+        overflow: hidden;
+      }
+
+      /* The hidden checkbox */
+      #theme-toggle {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      /* The slider circle */
+      .toggle-slider::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        z-index: 1;
+        box-shadow: 0 0 6px rgba(0,0,0,0.2);
+      }
+
+      /* Position icons */
+      .icon {
+        position: relative;
+        z-index: 0;
+        pointer-events: none;
+        user-select: none;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        text-align: center;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Sun on left, moon on right */
+      .icon.sun {
+        margin-left: 6px;
+        opacity: 1;
+      }
+
+      .icon.moon {
+        margin-right: 6px;
+        opacity: 0.3;
+      }
+
+      /* When toggled (light mode) */
+      #theme-toggle:checked + .toggle-slider {
+        background: #4f96ff;
+        box-shadow: 0 0 12px #4f96ffaa;
+      }
+
+      #theme-toggle:checked + .toggle-slider::before {
+        transform: translateX(30px);
+      }
+
+      /* Show moon fully on checked */
+      #theme-toggle:checked + .toggle-slider .moon {
+        opacity: 1;
+      }
+
+      /* Dim sun on checked */
+      #theme-toggle:checked + .toggle-slider .sun {
+        opacity: 0.3;
+      }
+
+      /* Hover popout */
+      .toggle-label:hover {
+        box-shadow: 0 0 20px #4f96ffcc;
+        transform: scale(1.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+    </style>
+</head>
+<body>
+    <div class="toggle-wrapper">
+      <label for="theme-toggle" class="toggle-label" title="Toggle Dark/Light Mode">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="toggle-slider">
+          <span class="icon sun">☀️</span>
+          <span class="icon moon">🌙</span>
+        </span>
+      </label>
+    </div>
+
+    <h1>CatchUp.AI - Generate & Send Revision Notes</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="topic">Topic taught:</label><br />
+        <input type="text" id="topic" name="topic" required /><br /><br />
+
+        <label for="student-select">Select student to send notes:</label><br />
+        <select id="student-select" name="student_id" required>
+            <option value="">Loading students...</option>
+        </select><br /><br />
+
+        <label for="file">Upload handwritten notes image (optional, ONLY PDF,JPEG,JPG AND PNG IS ALLOWED):</label><br />
+        <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.pdf" /><br /><br />
+
+        <button type="submit">Generate & Send Notes</button>
+    </form>
+
+    <h2>Summary:</h2>
+    <pre>{{ summary or "No summary generated yet." }}</pre>
+
+<script>
+async function loadMembers() {
+    const select = document.getElementById('student-select');
+    select.innerHTML = '<option value="">Select student</option>';
+    try {
+        const response = await fetch('/members');
+        const members = await response.json();
+        members.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.name;
+            select.appendChild(option);
+        });
+    } catch (e) {
+        select.innerHTML = '<option value="">Failed to load students</option>';
+    }
+}
+
+window.onload = () => {
+    loadMembers();
+
+    const toggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    // On page load, check stored theme preference
+    if (localStorage.getItem('theme') === 'light') {
+        body.classList.add('light-mode');
+        toggle.checked = true;
+    }
+
+    toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+            body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        } else {
+            body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+};
+</script>
+
+</body>
+</html>
